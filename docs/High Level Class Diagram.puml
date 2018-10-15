@@ -1,0 +1,67 @@
+@startuml
+
+class SocketManager
+
+class SocketListener
+
+interface Runnable
+
+Runnable <|-- SocketListener
+SocketManager *-- SocketListener
+SocketListener *-- ServerSocket
+SocketListener *-- MessageFilter
+SocketManager *-- NotifyService
+SocketManager *-- ExecutorService
+SocketManager *-- TallyService
+
+interface NotifyService
+interface TallyService
+
+NotifyService <|-- NotifyServiceImpl
+NotifyServiceImpl *-- TallyService
+
+class NotifyServiceImpl {
+- scheduler: ScheduledExecutorService
+- tallyService: TallyService
++ void: schedulNotifications()
+}
+
+TallyService <|-- TallyServiceImpl
+
+class TallyServiceImpl {
+  - {static} executor : ScheduledExecutorService
+  - {static} messagesQueue : ConcurrentLinkedQueue
+  - {static} priorRollingUnique : int
+  - {static} priorTotalCount: int
+  - {static} rollingDupeCount: int
+  - {static} rollingTotal: int
+  - {static} rollingUniqueCount: int
+  - {static} values: Multiset
+  + void snapshot()
+  + resetCounters()
+  + String readFromQueue()
+  + void putNumberOnQueue(String)
+  + void pollMessagesQueue()
+  + Integer getRunningTotalUnique()
+  + Integer getNewUniques()
+  + Integer getNewDupes()
+  + int getQueueSize()
+}
+
+class MessageFilter {
+ - {static} socket: Socket
+ - tallyService : TallyService
+ - validator : MessageValidator
+ + MessageFilter(Socket)
+ + Integer call()
+}
+
+MessageFilter *-- MessageValidator
+MessageValidator <|-- MessageValidatorImpl
+
+class MessageValidatorImpl {
+  + Boolean messageAllNumeric(String)
+  + Boolean messageTerminate(String)
+}
+
+@enduml

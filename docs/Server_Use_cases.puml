@@ -1,0 +1,14 @@
+@startuml
+
+Client --> (Connect)
+Client ---> (Send data - 9 digit number)
+Client ----> (Send kill switch)
+
+Admin --> (Review deduped Log)
+
+(Connect) <|-- (Request Connection)
+(Connect) <|-- (Open port 4000)
+
+note "This note is connected\nto several objects." as N2
+
+@enduml

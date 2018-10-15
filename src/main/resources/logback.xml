@@ -1,0 +1,30 @@
+<configuration>
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+	</appender>
+	<appender name="NUMBERS" class="ch.qos.logback.core.FileAppender">
+		<file>numbers.log</file>
+		<param name="Append" value="false" />
+		<encoder>
+			<pattern>%msg%n</pattern>
+		</encoder>
+	</appender>
+	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+		<file>sockets.log</file>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="com.newrelic.codingchallenge.server.service.LoggingServiceImpl"
+			level="debug">
+		<appender-ref ref="NUMBERS" />
+	</logger>
+
+
+	<root level="debug">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="FILE" />
+	</root>
+
+</configuration>

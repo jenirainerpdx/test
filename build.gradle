@@ -1,0 +1,43 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+    }
+}
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.1'
+    id 'java'
+    id 'application'
+    id 'idea'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    // Dependencies go here
+    compile 'ch.qos.logback:logback-classic:1.2.3'
+    compile 'org.apache.commons:commons-lang3:3.8.1'
+    compile 'com.google.guava:guava:26.0-jre'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.openjdk.jmh:jmh-core:1.21'
+    testCompile 'org.openjdk.jmh:jmh-generator-annprocess:1.21'
+
+}
+
+mainClassName = 'com.newrelic.codingchallenge.server.SocketManager'
+
+shadowJar {
+    baseName = 'coding-challenge-shadow'
+    classifier = null
+    version = null
+    manifest {
+        attributes 'Description': 'New Relic coding challenge application JAR'
+    }
+}
+
+
