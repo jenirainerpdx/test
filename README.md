@@ -1,5 +1,32 @@
 # coding-challenge
 
+##Notes to the Reviewer
+
+1.  Project was completed using the build framework and gradle.
+  - Due to this, you don't actually need to know where Main is, because you can simply 
+  start the project using `java -jar ./build/libs/coding-challenge-shadow.jar`
+  - For review purposes, the point of entry for the application (main method) is in com.newrelic.codingchallenge.server.SocketManager
+2.  There are some documentation and design artifacts for your consideration under nr_sockets/docs
+    - I use plantuml and there is an intellij plugin for that which allows you to look at the diagrams within the ide, if you like.
+    - Otherwise, you can grab the syntax and take it to: plantuml.com - there is a rendering screen near the bottom of the page.
+    - There is also a digest of the requirements with my assumptions and clarifications around them in Requirements.md
+    - A class diagram is also included 
+3. This was the best coding challenge I have done in my years of interviewing in the industry.  There were many ways that I 
+could have taken this and many avenues I would have liked to explore, given more time.  But, with only 8 hours (and I probably spent closer to 12), 
+I had to prioritize.  This challenge brought to the spotlight the interesting challenges of: 
+  - How decoupling with messaging/queues can enhance throughput
+  - Threading and how we manage concurrency with multiple data flows and aggregation
+    of those processing streams
+    
+To be very transparent: I have been deeply entrenched in some tightly coupled java 6 code that, while challenging, 
+has left me wondering if perhaps Java *is* too bloated for most purposes.  As I worked through this exercise, I was focused 
+on reminding myself that my Object Oriented bias doesn't always play well.  Sometimes, there are functional needs.  
+Sometimes, OO is not the right tool.  I think that there were places in this challenge where that may have been true.  In any 
+case, it has prompted me to resume my work on clojure to expand my understanding of where functional is more expedient.
+
+             
+
+
 Coding Challenge Build Framework
 
 ## Starter build framework for the coding challenge
