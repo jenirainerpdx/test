@@ -21,12 +21,18 @@ public class TallyServiceStreams implements TallyService {
 	ThreadFactory pollerThreads = new ThreadFactoryBuilder().setNameFormat("pollerThreads-%d").build();
 	private ScheduledExecutorService tallyPoller = Executors.newScheduledThreadPool(30, pollerThreads);
 	private static MessagesReceivedCounter totalMessagesCounter;
+	private static int priorTotalReceived = 0;
+	private static int rollingTotalReceived = 0;
+	private static int rollingUniqueCount = 0;
+	private static int priorUniqueCount = 0;
 	private static MessagesReceivedCounter duplicateCounter;
 	private static MessagesReceivedCounter uniqueCounter;
 	private static ValueMap valueMap;
 	private static LoggingService loggingService;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TallyServiceStreams.class);
+	private int rollingDupeCount =0;
+	private int currentTotalUnique =0;
 
 	public TallyServiceStreams(ValueMap values, MessagesReceivedCounter counter,
 							MessagesReceivedCounter dupeCounter,
@@ -70,24 +76,33 @@ public class TallyServiceStreams implements TallyService {
 
 	@Override
 	public Integer getNewUniques() {
-		return null;
+		return rollingUniqueCount;
 	}
 
 	@Override
 	public Integer getNewDupes() {
-		return null;
+		return rollingDupeCount;
 	}
 
 	@Override
 	public Integer getRunningTotalUnique() {
-		return null;
+		return currentTotalUnique;
 	}
 
 	@Override
 	public void snapshot() {
-		LOGGER.debug("Total received count:  " + totalMessagesCounter.getTotalReceivedCount());
+		int currentTotalReceived = totalMessagesCounter.getTotalReceivedCount();
+		rollingTotalReceived = currentTotalReceived - priorTotalReceived;
+		currentTotalUnique = uniqueCounter.getTotalReceivedCount();
+		rollingUniqueCount = currentTotalUnique - priorUniqueCount;
+		rollingDupeCount = rollingTotalReceived - rollingUniqueCount;
+
+		LOGGER.debug("Total received count:  " + rollingTotalReceived);
 		LOGGER.debug("Unique received count:  " + uniqueCounter.getTotalReceivedCount());
 
+		// reset prior values to current after all calculations are done.
+		priorTotalReceived = currentTotalReceived;
+		priorUniqueCount = currentTotalUnique;
 	}
 
 	@Override
