@@ -2,5 +2,6 @@ package com.newrelic.codingchallenge.server.service;
 
 public interface LoggingService {
 
-	String logMessage(String messageIn);
+	void logMessage(String messageIn);
+	void stopService();
 }

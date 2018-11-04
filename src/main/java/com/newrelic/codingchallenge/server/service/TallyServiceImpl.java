@@ -1,75 +1,88 @@
 package com.newrelic.codingchallenge.server.service;
 
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.newrelic.codingchallenge.model.MessagesReceivedCounter;
+import com.newrelic.codingchallenge.model.Request;
+import com.newrelic.codingchallenge.model.RequestImpl;
+import com.newrelic.codingchallenge.model.ValueMap;
+import com.newrelic.codingchallenge.server.SocketListener;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-public class TallyServiceImpl implements TallyService {
+public class TallyServiceImpl implements TallyService, Runnable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TallyServiceImpl.class);
-	static final Multiset values;
 	private static int rollingUniqueCount;
 	private static int rollingDupeCount;
 	private static int rollingTotal;
 	private static int priorTotalCount;
+	private static int currentTotalCount;
+	private final LoggingService loggingService = new LoggerLoggingService();
+
+	private static ValueMap valueMap;
+	private static MessagesReceivedCounter totalMessagesCounter;
+	private static MessagesReceivedCounter duplicateCounter;
+	ThreadFactory pollerThreads = new ThreadFactoryBuilder().setNameFormat("pollerThreads-%d").build();
+	private ScheduledExecutorService tallyPoller = Executors.newScheduledThreadPool(30, pollerThreads);
+	private static int currentRollingUniqueTotal;
 	private static int priorRollingUnique;
-	private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-	private final LoggingService loggingService = new LoggingServiceImpl();
-	private static ConcurrentLinkedQueue<String> messagesQueue;
+	private static MessagesReceivedCounter uniqueCounter;
 
-	@Override
-	public void pollMessagesQueue() {
-		final Runnable poller = () -> {
-			String message = readFromQueue();
-			if (message != null) {
-				boolean logit = false;
-				if (!values.contains(message)) {
-					logit = true; // only log unique values.
-				}
-				values.add(message);
-				LOGGER.debug("Just pulled " + message + " from queue and put it into our multiset.  " +
-						"  Queue size:  " + getQueueSize());
-				if (logit) {
-					loggingService.logMessage(message);
-				}
-			} else {
-				LOGGER.debug("Empty queue.");
-			}
 
-		};
-		final ScheduledFuture<?> pollingHandle = executor.scheduleAtFixedRate(
-				poller, 10, 50, TimeUnit.MILLISECONDS);
+	public TallyServiceImpl(ValueMap values, MessagesReceivedCounter counter,
+							MessagesReceivedCounter dupeCounter,
+							MessagesReceivedCounter uniques
+			) {
+		valueMap = values;
+		totalMessagesCounter = counter;
+		duplicateCounter = dupeCounter;
+		uniqueCounter = uniques;
+		schedulePolling();
 	}
 
-	static {
-		// intentionally not concurrent; does not need to be
-		// because we are dealing w/ one thread on the back end.
-		values = HashMultiset.create();
-		messagesQueue = new ConcurrentLinkedQueue<>();
+	private void schedulePolling(){
+		tallyPoller.scheduleAtFixedRate(() -> {
+			run();
+		}, 5, 2000L, TimeUnit.MILLISECONDS);
 	}
 
 	public void snapshot() {
 
-		int currentTotalCount = values.size(); // this is total size
-		int currentUniqueCount = values.elementSet().size();
-		int changeInTotalCount = currentTotalCount - priorTotalCount;
-		int changeInUniqueCount = currentUniqueCount - rollingTotal;
-		int currentDupeCount = changeInTotalCount - changeInUniqueCount;
+		ConcurrentNavigableMap<Integer, Integer> tenSecondMap = valueMap.getEventsFromLastTenSeconds();
 
-		priorRollingUnique = rollingTotal;
+		// Totals:
+		currentTotalCount = totalMessagesCounter.getTotalReceivedCount();
+		int changeInTotalCount = currentTotalCount - priorTotalCount; //5
+		// now set prior to current
+		priorTotalCount = currentTotalCount; //5
+		LOGGER.debug("Current total:  " + currentTotalCount + "  changeInTotal:  " + changeInTotalCount);
 
 
-		rollingUniqueCount = currentUniqueCount - priorRollingUnique;
-		rollingTotal = currentUniqueCount;
-		rollingDupeCount = currentDupeCount;
-		priorTotalCount = currentTotalCount;
+		currentRollingUniqueTotal = valueMap.size();
+		rollingUniqueCount = currentRollingUniqueTotal - priorRollingUnique;
+		priorRollingUnique = currentRollingUniqueTotal;
+
+		rollingDupeCount = changeInTotalCount - rollingUniqueCount; // 5
+
+		rollingTotal = valueMap.size();
+		for (Integer val : tenSecondMap.values()) {
+			loggingService.logMessage(StringUtils.leftPad("" + val, 9, "0"));
+		}
+	}
+
+	public void stopService(){
+		snapshot();
+		loggingService.stopService();
 	}
 
 	@Override
@@ -96,20 +109,39 @@ public class TallyServiceImpl implements TallyService {
 		return rollingTotal;
 	}
 
-
 	@Override
-	public void putNumberOnQueue(String message) {
-		LOGGER.debug("adding " + message + " to the queue.");
-		messagesQueue.offer(message);
+	public void putNumberOnQueue(Request request) {
+		totalMessagesCounter.gotAMessage();
+		if (valueMap.valueExists(request.getIntegerMessage())) {
+			duplicateCounter.gotAMessage();
+			LOGGER.debug("Found a value which is already in the map.  Not logging this one.  " + request.getIntegerMessage());
+			// do we need to add this to the map? maybe.
+		} else {
+			uniqueCounter.gotAMessage();
+			valueMap.acceptEvent(request);
+		}
+	}
+
+	public void showMe() {
+		this.valueMap.showme();
 	}
 
 	@Override
-	public String readFromQueue(){
-		return messagesQueue.poll();
-	}
-
-	@Override
-	public int getQueueSize() {
-		return messagesQueue.size();
+	public void run() {
+		LOGGER.trace("in tallyservice.run");
+		// only gets numeric messages.
+		LinkedBlockingQueue<String> queue = SocketListener.messagesQueue;
+		if (queue.isEmpty()) {
+			LOGGER.trace("no messages in the queue to process.");
+		} else {
+			List<String> readMessages = new ArrayList<>();
+			int howMany = queue.drainTo(readMessages);
+			LOGGER.debug("just added to tmc.  : " + totalMessagesCounter.getTotalReceivedCount());
+			for (String s : readMessages) {
+				Request request = new RequestImpl(s, Thread.currentThread().getName());
+				putNumberOnQueue(request);
+			}
+		}
 	}
 }
+

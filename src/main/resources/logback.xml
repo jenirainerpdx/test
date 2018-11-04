@@ -1,6 +1,8 @@
 <configuration>
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
 	</appender>
 	<appender name="NUMBERS" class="ch.qos.logback.core.FileAppender">
 		<file>numbers.log</file>
@@ -16,11 +18,10 @@
 		</encoder>
 	</appender>
 
-	<logger name="com.newrelic.codingchallenge.server.service.LoggingServiceImpl"
+	<logger name="com.newrelic.codingchallenge.server.service.LoggerLoggingService"
 			level="debug">
 		<appender-ref ref="NUMBERS" />
 	</logger>
-
 
 	<root level="debug">
 		<appender-ref ref="STDOUT" />

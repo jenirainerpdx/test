@@ -1,6 +1,8 @@
 package com.newrelic.codingchallenge.server.service;
 
-public interface TallyService {
+import com.newrelic.codingchallenge.model.Request;
+
+public interface TallyService{
 	Integer getNewUniques();
 
 	Integer getNewDupes();
@@ -9,13 +11,10 @@ public interface TallyService {
 
 	void snapshot();
 
+	void stopService();
+
 	void resetCounters();
 
-	void pollMessagesQueue();
+	void putNumberOnQueue(Request request);
 
-	void putNumberOnQueue(String message);
-
-	String readFromQueue();
-
-	int getQueueSize();
 }
