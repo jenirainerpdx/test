@@ -13,8 +13,4 @@ public interface TallyService{
 
 	void stopService();
 
-	void resetCounters();
-
-	void putNumberOnQueue(Request request);
-
 }

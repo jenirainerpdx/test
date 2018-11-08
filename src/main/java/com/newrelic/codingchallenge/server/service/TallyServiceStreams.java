@@ -2,10 +2,11 @@ package com.newrelic.codingchallenge.server.service;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.newrelic.codingchallenge.model.MessagesReceivedCounter;
-import com.newrelic.codingchallenge.model.Request;
-import com.newrelic.codingchallenge.model.RequestImpl;
 import com.newrelic.codingchallenge.model.ValueMap;
 import com.newrelic.codingchallenge.server.SocketListener;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+@State(Scope.Benchmark)
 public class TallyServiceStreams implements TallyService {
 
 	ThreadFactory pollerThreads = new ThreadFactoryBuilder().setNameFormat("pollerThreads-%d").build();
@@ -34,9 +36,18 @@ public class TallyServiceStreams implements TallyService {
 	private int rollingDupeCount =0;
 	private int currentTotalUnique =0;
 
+	public TallyServiceStreams() {
+		valueMap = new ValueMap();
+		totalMessagesCounter = new MessagesReceivedCounter();
+		duplicateCounter = new MessagesReceivedCounter();
+		uniqueCounter = new MessagesReceivedCounter();
+		schedulePolling();
+		loggingService = new FileIOLoggingService();
+	}
+
 	public TallyServiceStreams(ValueMap values, MessagesReceivedCounter counter,
-							MessagesReceivedCounter dupeCounter,
-							MessagesReceivedCounter uniques
+							   MessagesReceivedCounter dupeCounter,
+							   MessagesReceivedCounter uniques
 	) {
 		valueMap = values;
 		totalMessagesCounter = counter;
@@ -51,7 +62,6 @@ public class TallyServiceStreams implements TallyService {
 			run();
 		}, 5, 200L, TimeUnit.MILLISECONDS);
 	}
-
 
 	private void run(){
 		LinkedBlockingQueue<String> queue = SocketListener.messagesQueue;
@@ -89,6 +99,7 @@ public class TallyServiceStreams implements TallyService {
 		return currentTotalUnique;
 	}
 
+	@Benchmark
 	@Override
 	public void snapshot() {
 		int currentTotalReceived = totalMessagesCounter.getTotalReceivedCount();
@@ -108,23 +119,5 @@ public class TallyServiceStreams implements TallyService {
 	@Override
 	public void stopService() {
 
-	}
-
-	@Override
-	public void resetCounters() {
-
-	}
-
-	@Override
-	public void putNumberOnQueue(Request request) {
-		totalMessagesCounter.gotAMessage();
-		if (valueMap.valueExists(request.getIntegerMessage())) {
-			duplicateCounter.gotAMessage();
-			LOGGER.debug("Found a value which is already in the map.  Not logging this one.  " + request.getIntegerMessage());
-			// do we need to add this to the map? maybe.
-		} else {
-			uniqueCounter.gotAMessage();
-			valueMap.acceptEvent(request);
-		}
 	}
 }

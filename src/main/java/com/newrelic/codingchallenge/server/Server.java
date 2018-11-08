@@ -1,5 +1,6 @@
 package com.newrelic.codingchallenge.server;
 
+import org.openjdk.jmh.runner.RunnerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +15,11 @@ public class Server extends Thread {
 		try {
 			SocketListener server = new SocketListener();
 			server.start();
+			org.openjdk.jmh.Main.main(args);
 		} catch (IOException e) {
 			LOGGER.error("Unable to start server:  " + e);
+		} catch (RunnerException e) {
+			LOGGER.error("unable to start jmh  " + e);
 		}
 	}
 

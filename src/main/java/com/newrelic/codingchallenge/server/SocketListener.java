@@ -8,6 +8,13 @@ import com.newrelic.codingchallenge.server.service.TallyService;
 import com.newrelic.codingchallenge.server.service.TallyServiceImpl;
 import com.newrelic.codingchallenge.server.service.TallyServiceStreams;
 import org.apache.commons.lang3.StringUtils;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +42,7 @@ import java.util.concurrent.TimeUnit;
  * <p/>
  * Web server with shutdown support
  */
+@State(Scope.Benchmark)
 public class SocketListener {
 
 	static ThreadFactory server = new ThreadFactoryBuilder().setNameFormat("server-%d").build();
@@ -48,6 +56,8 @@ public class SocketListener {
 	private static final MessagesReceivedCounter dupeCounter = new MessagesReceivedCounter();
 	private static final MessagesReceivedCounter uniqueCounter = new MessagesReceivedCounter();
 	private TallyService tallyService;
+
+	public SocketListener(){}
 
 	public static LinkedBlockingQueue<String> messagesQueue;
 
