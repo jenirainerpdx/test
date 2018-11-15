@@ -1,18 +1,12 @@
-package com.newrelic.codingchallenge.server;
+package com.jentest.sockets.server;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.newrelic.codingchallenge.model.MessagesReceivedCounter;
-import com.newrelic.codingchallenge.model.ValueMap;
-import com.newrelic.codingchallenge.server.service.NotificationService;
-import com.newrelic.codingchallenge.server.service.TallyService;
-import com.newrelic.codingchallenge.server.service.TallyServiceImpl;
-import com.newrelic.codingchallenge.server.service.TallyServiceStreams;
+import com.jentest.sockets.model.MessagesReceivedCounter;
+import com.jentest.sockets.model.ValueMap;
+import com.jentest.sockets.server.service.NotificationService;
+import com.jentest.sockets.server.service.TallyService;
+import com.jentest.sockets.server.service.TallyServiceStreams;
 import org.apache.commons.lang3.StringUtils;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.slf4j.Logger;

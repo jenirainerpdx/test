@@ -1,4 +1,4 @@
-package com.newrelic.codingchallenge.server;
+package com.jentest.sockets.server;
 
 import org.junit.Test;
 import org.openjdk.jmh.annotations.Benchmark;

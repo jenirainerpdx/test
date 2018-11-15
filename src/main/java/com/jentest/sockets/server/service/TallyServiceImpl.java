@@ -1,11 +1,11 @@
-package com.newrelic.codingchallenge.server.service;
+package com.jentest.sockets.server.service;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.newrelic.codingchallenge.model.MessagesReceivedCounter;
-import com.newrelic.codingchallenge.model.Request;
-import com.newrelic.codingchallenge.model.RequestImpl;
-import com.newrelic.codingchallenge.model.ValueMap;
-import com.newrelic.codingchallenge.server.SocketListener;
+import com.jentest.sockets.model.MessagesReceivedCounter;
+import com.jentest.sockets.model.Request;
+import com.jentest.sockets.model.RequestImpl;
+import com.jentest.sockets.model.ValueMap;
+import com.jentest.sockets.server.SocketListener;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

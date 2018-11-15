@@ -1,6 +1,4 @@
-package com.newrelic.codingchallenge.server.service;
-
-import com.newrelic.codingchallenge.model.Request;
+package com.jentest.sockets.server.service;
 
 public interface TallyService{
 	Integer getNewUniques();

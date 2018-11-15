@@ -1,9 +1,9 @@
-package com.newrelic.codingchallenge.server.service;
+package com.jentest.sockets.server.service;
 
-import com.newrelic.codingchallenge.model.MessagesReceivedCounter;
-import com.newrelic.codingchallenge.model.Request;
-import com.newrelic.codingchallenge.model.RequestImpl;
-import com.newrelic.codingchallenge.model.ValueMap;
+import com.jentest.sockets.model.MessagesReceivedCounter;
+import com.jentest.sockets.model.Request;
+import com.jentest.sockets.model.RequestImpl;
+import com.jentest.sockets.model.ValueMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;

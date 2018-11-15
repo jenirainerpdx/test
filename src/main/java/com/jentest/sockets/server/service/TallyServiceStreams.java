@@ -1,9 +1,9 @@
-package com.newrelic.codingchallenge.server.service;
+package com.jentest.sockets.server.service;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.newrelic.codingchallenge.model.MessagesReceivedCounter;
-import com.newrelic.codingchallenge.model.ValueMap;
-import com.newrelic.codingchallenge.server.SocketListener;
+import com.jentest.sockets.model.MessagesReceivedCounter;
+import com.jentest.sockets.model.ValueMap;
+import com.jentest.sockets.server.SocketListener;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;

@@ -1,4 +1,4 @@
-package com.newrelic.codingchallenge.server.service;
+package com.jentest.sockets.server.service;
 
 import java.util.List;
 

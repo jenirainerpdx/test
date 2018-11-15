@@ -5,7 +5,7 @@
 1.  Project was completed using the build framework and gradle.
   - Due to this, you don't actually need to know where Main is, because you can simply 
   start the project using `java -jar ./build/libs/coding-challenge-shadow.jar`
-  - For review purposes, the point of entry for the application (main method) is in com.newrelic.codingchallenge.server.SocketManager
+  - For review purposes, the point of entry for the application (main method) is in com.jentest.sockets.server.SocketManager
 2.  There are some documentation and design artifacts for your consideration under nr_sockets/docs
     - I use plantuml and there is an intellij plugin for that which allows you to look at the diagrams within the ide, if you like.
     - Otherwise, you can grab the syntax and take it to: plantuml.com - there is a rendering screen near the bottom of the page.
@@ -34,7 +34,7 @@ Coding Challenge Build Framework
 First, you do not need to use this starter framework for your project.
 If you would rather use a different build system (maven, javac, ...)
 you are free to so long as you provide clear commands to build your
-project and start your com.newrelic.codingchallenge.server.  Failure to do so will invalidate your
+project and start your com.jentest.sockets.server.  Failure to do so will invalidate your
 submission.
 
 

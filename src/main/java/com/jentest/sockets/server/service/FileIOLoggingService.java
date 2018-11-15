@@ -1,6 +1,5 @@
-package com.newrelic.codingchallenge.server.service;
+package com.jentest.sockets.server.service;
 
-import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.slf4j.Logger;

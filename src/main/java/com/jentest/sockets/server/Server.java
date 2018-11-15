@@ -1,4 +1,4 @@
-package com.newrelic.codingchallenge.server;
+package com.jentest.sockets.server;
 
 import org.openjdk.jmh.runner.RunnerException;
 import org.slf4j.Logger;
