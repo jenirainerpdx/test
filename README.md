@@ -10,7 +10,7 @@ There are some documentation and design artifacts for your consideration under d
     - A class diagram is also included 
 
 
-## Starter build framework for the coding challenge
+## Starter build framework
 
 First, you do not need to use this starter framework for your project.
 If you would rather use a different build system (maven, javac, ...)
