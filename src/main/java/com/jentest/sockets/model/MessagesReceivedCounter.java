@@ -1,4 +1,4 @@
-package com.newrelic.codingchallenge.model;
+package com.jentest.sockets.model;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

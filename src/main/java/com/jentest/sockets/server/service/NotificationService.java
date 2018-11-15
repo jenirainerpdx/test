@@ -1,4 +1,4 @@
-package com.newrelic.codingchallenge.server.service;
+package com.jentest.sockets.server.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

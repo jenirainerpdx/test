@@ -1,11 +1,12 @@
-package com.newrelic.codingchallenge.server.service;
+package com.jentest.sockets.server.service;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.newrelic.codingchallenge.model.MessagesReceivedCounter;
-import com.newrelic.codingchallenge.model.Request;
-import com.newrelic.codingchallenge.model.RequestImpl;
-import com.newrelic.codingchallenge.model.ValueMap;
-import com.newrelic.codingchallenge.server.SocketListener;
+import com.jentest.sockets.model.MessagesReceivedCounter;
+import com.jentest.sockets.model.ValueMap;
+import com.jentest.sockets.server.SocketListener;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,21 +17,37 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+@State(Scope.Benchmark)
 public class TallyServiceStreams implements TallyService {
 
 	ThreadFactory pollerThreads = new ThreadFactoryBuilder().setNameFormat("pollerThreads-%d").build();
 	private ScheduledExecutorService tallyPoller = Executors.newScheduledThreadPool(30, pollerThreads);
 	private static MessagesReceivedCounter totalMessagesCounter;
+	private static int priorTotalReceived = 0;
+	private static int rollingTotalReceived = 0;
+	private static int rollingUniqueCount = 0;
+	private static int priorUniqueCount = 0;
 	private static MessagesReceivedCounter duplicateCounter;
 	private static MessagesReceivedCounter uniqueCounter;
 	private static ValueMap valueMap;
 	private static LoggingService loggingService;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TallyServiceStreams.class);
+	private int rollingDupeCount =0;
+	private int currentTotalUnique =0;
+
+	public TallyServiceStreams() {
+		valueMap = new ValueMap();
+		totalMessagesCounter = new MessagesReceivedCounter();
+		duplicateCounter = new MessagesReceivedCounter();
+		uniqueCounter = new MessagesReceivedCounter();
+		schedulePolling();
+		loggingService = new FileIOLoggingService();
+	}
 
 	public TallyServiceStreams(ValueMap values, MessagesReceivedCounter counter,
-							MessagesReceivedCounter dupeCounter,
-							MessagesReceivedCounter uniques
+							   MessagesReceivedCounter dupeCounter,
+							   MessagesReceivedCounter uniques
 	) {
 		valueMap = values;
 		totalMessagesCounter = counter;
@@ -45,7 +62,6 @@ public class TallyServiceStreams implements TallyService {
 			run();
 		}, 5, 200L, TimeUnit.MILLISECONDS);
 	}
-
 
 	private void run(){
 		LinkedBlockingQueue<String> queue = SocketListener.messagesQueue;
@@ -70,46 +86,38 @@ public class TallyServiceStreams implements TallyService {
 
 	@Override
 	public Integer getNewUniques() {
-		return null;
+		return rollingUniqueCount;
 	}
 
 	@Override
 	public Integer getNewDupes() {
-		return null;
+		return rollingDupeCount;
 	}
 
 	@Override
 	public Integer getRunningTotalUnique() {
-		return null;
+		return currentTotalUnique;
 	}
 
+	@Benchmark
 	@Override
 	public void snapshot() {
-		LOGGER.debug("Total received count:  " + totalMessagesCounter.getTotalReceivedCount());
+		int currentTotalReceived = totalMessagesCounter.getTotalReceivedCount();
+		rollingTotalReceived = currentTotalReceived - priorTotalReceived;
+		currentTotalUnique = uniqueCounter.getTotalReceivedCount();
+		rollingUniqueCount = currentTotalUnique - priorUniqueCount;
+		rollingDupeCount = rollingTotalReceived - rollingUniqueCount;
+
+		LOGGER.debug("Total received count:  " + rollingTotalReceived);
 		LOGGER.debug("Unique received count:  " + uniqueCounter.getTotalReceivedCount());
 
+		// reset prior values to current after all calculations are done.
+		priorTotalReceived = currentTotalReceived;
+		priorUniqueCount = currentTotalUnique;
 	}
 
 	@Override
 	public void stopService() {
 
-	}
-
-	@Override
-	public void resetCounters() {
-
-	}
-
-	@Override
-	public void putNumberOnQueue(Request request) {
-		totalMessagesCounter.gotAMessage();
-		if (valueMap.valueExists(request.getIntegerMessage())) {
-			duplicateCounter.gotAMessage();
-			LOGGER.debug("Found a value which is already in the map.  Not logging this one.  " + request.getIntegerMessage());
-			// do we need to add this to the map? maybe.
-		} else {
-			uniqueCounter.gotAMessage();
-			valueMap.acceptEvent(request);
-		}
 	}
 }

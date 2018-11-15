@@ -1,11 +1,11 @@
-package com.newrelic.codingchallenge.server.service;
+package com.jentest.sockets.server.service;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.newrelic.codingchallenge.model.MessagesReceivedCounter;
-import com.newrelic.codingchallenge.model.Request;
-import com.newrelic.codingchallenge.model.RequestImpl;
-import com.newrelic.codingchallenge.model.ValueMap;
-import com.newrelic.codingchallenge.server.SocketListener;
+import com.jentest.sockets.model.MessagesReceivedCounter;
+import com.jentest.sockets.model.Request;
+import com.jentest.sockets.model.RequestImpl;
+import com.jentest.sockets.model.ValueMap;
+import com.jentest.sockets.server.SocketListener;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,6 @@ public class TallyServiceImpl implements TallyService, Runnable {
 	private static int rollingDupeCount;
 	private static int rollingTotal;
 	private static int priorTotalCount;
-	private static int currentTotalCount;
 	private final LoggingService loggingService = new LoggerLoggingService();
 
 	private static ValueMap valueMap;
@@ -51,9 +50,10 @@ public class TallyServiceImpl implements TallyService, Runnable {
 	}
 
 	private void schedulePolling(){
-		tallyPoller.scheduleAtFixedRate(() -> {
-			run();
-		}, 5, 2000L, TimeUnit.MILLISECONDS);
+		tallyPoller.scheduleAtFixedRate(() -> run(),
+										5,
+										2000L,
+								TimeUnit.MILLISECONDS);
 	}
 
 	public void snapshot() {
@@ -61,7 +61,7 @@ public class TallyServiceImpl implements TallyService, Runnable {
 		ConcurrentNavigableMap<Integer, Integer> tenSecondMap = valueMap.getEventsFromLastTenSeconds();
 
 		// Totals:
-		currentTotalCount = totalMessagesCounter.getTotalReceivedCount();
+		int currentTotalCount = totalMessagesCounter.getTotalReceivedCount();
 		int changeInTotalCount = currentTotalCount - priorTotalCount; //5
 		// now set prior to current
 		priorTotalCount = currentTotalCount; //5
@@ -86,14 +86,6 @@ public class TallyServiceImpl implements TallyService, Runnable {
 	}
 
 	@Override
-	public void resetCounters() {
-		rollingDupeCount = 0;
-		rollingUniqueCount = 0;
-		rollingTotal = 0;
-		priorTotalCount = 0;
-	}
-
-	@Override
 	public Integer getNewUniques() {
 		return rollingUniqueCount;
 	}
@@ -109,8 +101,7 @@ public class TallyServiceImpl implements TallyService, Runnable {
 		return rollingTotal;
 	}
 
-	@Override
-	public void putNumberOnQueue(Request request) {
+	void putNumberOnQueue(Request request) {
 		totalMessagesCounter.gotAMessage();
 		if (valueMap.valueExists(request.getIntegerMessage())) {
 			duplicateCounter.gotAMessage();
@@ -135,7 +126,7 @@ public class TallyServiceImpl implements TallyService, Runnable {
 			LOGGER.trace("no messages in the queue to process.");
 		} else {
 			List<String> readMessages = new ArrayList<>();
-			int howMany = queue.drainTo(readMessages);
+			queue.drainTo(readMessages);
 			LOGGER.debug("just added to tmc.  : " + totalMessagesCounter.getTotalReceivedCount());
 			for (String s : readMessages) {
 				Request request = new RequestImpl(s, Thread.currentThread().getName());
